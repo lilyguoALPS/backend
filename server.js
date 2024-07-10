@@ -43,12 +43,16 @@ function getRoomNames(callback) {
 }
 
 // Endpoint to get room names
+
 app.get("/api/roomNames", (req, res) => {
-  getRoomNames((err, roomNames) => {
+  const query = "SELECT name FROM room";
+  db.query(query, (err, results) => {
     if (err) {
       console.error("Error fetching room names:", err);
       return res.status(500).json({ error: "Failed to fetch room names" });
     }
+    const roomNames = results.map((row) => row.name);
+    console.log("Fetched room names:", roomNames);
     res.json({ roomNames });
   });
 });
@@ -56,8 +60,9 @@ app.get("/api/roomNames", (req, res) => {
 // Endpoint to get batchId by roomName
 app.get("/api/batchId/:roomName", (req, res) => {
   const roomName = req.params.roomName;
-  const query = "SELECT batchId FROM batches WHERE roomName = ?";
-
+  const query = "SELECT batch_id FROM batch_info join room on room.zone_num = batch_info.room_id WHERE name = ?";
+  console.log('hi')
+  console.log(roomName)
   db.query(query, [roomName], (err, results) => {
     if (err) {
       console.error("Error fetching batchId:", err);
@@ -66,8 +71,10 @@ app.get("/api/batchId/:roomName", (req, res) => {
     if (results.length === 0) {
       return res.status(404).json({ error: "BatchId not found for roomName" });
     }
-    const batchId = results[0].batchId;
-    res.json({ batchId });
+    console.log(results)
+    //const batchId = results[0].batch_id;
+    const batchIds = results.map(row=>row.batch_id);
+    res.json({ batchIds:batchIds });
   });
 });
 
